@@ -134,6 +134,15 @@ return [
             'chat_id' => env('TELEGRAM_CHAT_ID'),
             'token' => env('TELEGRAM_TOKEN'),
         ],
+
+        'tg' => [
+            'driver'  => 'monolog',
+            'handler' => Monolog\Handler\TelegramBotHandler::class,
+            'with' => [
+                'apiKey' => env('TELEGRAM_TOKEN'),
+                'channel' => env('TELEGRAM_CHAT_ID'),
+            ],
+        ],
     ],
 
 ];
