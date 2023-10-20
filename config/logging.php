@@ -131,16 +131,16 @@ return [
             'driver' => 'custom',
             'via' => \App\Logging\Telegram\TelegramLoggerFactory::class,
             'level' => env('LOG_LEVEL', 'debug'),
-            'chat_id' => env('TELEGRAM_CHAT_ID'),
-            'token' => env('TELEGRAM_TOKEN'),
+            'chat_id' => env('LOGGER_TELEGRAM_CHAT_ID'),
+            'token' => env('LOGGER_TELEGRAM_TOKEN'),
         ],
 
         'tg' => [
             'driver'  => 'monolog',
             'handler' => Monolog\Handler\TelegramBotHandler::class,
             'with' => [
-                'apiKey' => env('TELEGRAM_TOKEN'),
-                'channel' => env('TELEGRAM_CHAT_ID'),
+                'apiKey' => env('LOGGER_TELEGRAM_TOKEN'),
+                'channel' => env('LOGGER_TELEGRAM_CHAT_ID'),
             ],
         ],
     ],
