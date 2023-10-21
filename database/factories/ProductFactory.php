@@ -15,11 +15,7 @@ class ProductFactory extends Factory
     {
         return [
             'title' => ucfirst(fake()->words(2, true)),
-            'thumbnail' => fake()->file(
-                base_path('/tests/Fixtures/images/products'),
-                storage_path('/app/public/images/products'),
-                false
-            ),
+            'thumbnail' => fake()->imagesFromFixtures('products', 'products'),
             'price' => fake()->numberBetween(1000, 100000),
             'brand_id' => Brand::inRandomOrder()->value('id'),
         ];
