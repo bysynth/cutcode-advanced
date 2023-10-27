@@ -3,28 +3,22 @@
 namespace App\Faker;
 
 use Faker\Provider\Base;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 
 class FakerImageProvider extends Base
 {
-    public function imagesFromFixtures(string $fromDirectory, string $toPublicDirectory): string
+    public function fixturesImage(string $fixturesDir, string $storageDir): string
     {
-        $fixturesPath = 'tests/Fixtures/images';
-        $toPublicDirectory = 'images' . DIRECTORY_SEPARATOR . $toPublicDirectory;
-
-        if (Storage::directoryMissing($toPublicDirectory)) {
-            Storage::makeDirectory($toPublicDirectory);
+        if (!Storage::exists($storageDir)) {
+            Storage::makeDirectory($storageDir);
         }
 
-        $files = Arr::map(
-            File::files(base_path($fixturesPath) . DIRECTORY_SEPARATOR . $fromDirectory),
-            fn($file) => $file->getPathname()
+        $file = $this->generator->file(
+            base_path("tests/Fixtures/images/$fixturesDir"),
+            Storage::path($storageDir),
+            false
         );
 
-        $randomFile = Arr::random($files);
-
-        return Storage::putFile($toPublicDirectory, $randomFile);
+        return '/storage/' . trim($storageDir ,'/') . '/' . $file;
     }
 }

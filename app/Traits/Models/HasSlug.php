@@ -8,22 +8,43 @@ trait HasSlug
 {
     protected static function bootHasSlug(): void
     {
-        static::creating(function (Model $model) {
-            $model->slug = $model->slug ?? $model->makeSlug($model->{self::slugFrom()});
+        static::creating(function (Model $item) {
+            $item->makeSlug();
         });
     }
 
-    public static function slugFrom(): string
+    protected function makeSlug(): void
+    {
+        if (!$this->{$this->slugColumn()}) {
+            $slug = $this->slugUnique(
+                str($this->{$this->slugFrom()})
+                    ->slug()
+                    ->value()
+            );
+
+            $this->{$this->slugColumn()} = $slug;
+        }
+    }
+
+    protected function slugColumn(): string
+    {
+        return 'slug';
+    }
+
+    protected function slugFrom(): string
     {
         return 'title';
     }
 
-    protected function makeSlug(string $slugFromValue): string
+    protected function slugUnique(string $slug): string
     {
-        $slug = str($slugFromValue)->slug()->value();
+        $originalSlug = $slug;
+        $i = 0;
 
-        if ($this->isSlugExists($slug)) {
-            $slug = $this->getUniqueSlug($slug, 1);
+        while ($this->isSlugExists($slug)) {
+            $i++;
+
+            $slug = $originalSlug . '-' . $i;
         }
 
         return $slug;
@@ -31,17 +52,11 @@ trait HasSlug
 
     protected function isSlugExists(string $slug): bool
     {
-        return static::where('slug', $slug)->exists();
-    }
+        $query = $this->newQuery()
+            ->where($this->slugColumn(), $slug)
+            ->where($this->getKeyName(), '!=', $this->getKey())
+            ->withoutGlobalScopes();
 
-    protected function getUniqueSlug(string $slug, int $iterator)
-    {
-        $newSlug = $slug . '-' . $iterator;
-
-        if (!$this->isSlugExists($newSlug)) {
-            return $newSlug;
-        }
-
-        return $this->getUniqueSlug($slug, ++$iterator);
+        return $query->exists();
     }
 }

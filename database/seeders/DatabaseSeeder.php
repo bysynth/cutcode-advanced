@@ -14,8 +14,13 @@ class DatabaseSeeder extends Seeder
     {
         Brand::factory(20)->create();
 
-        Category::factory(10)
-            ->has(Product::factory(rand(5, 15)))
-            ->create();
+        $categories = Category::factory(10)->create();
+
+        Product::factory(30)
+            ->create()
+            ->each(fn(Product $product) => $product
+                ->categories()
+                ->sync($categories->random(rand(1, 3)))
+            );
     }
 }
