@@ -5,4 +5,5 @@ import '../sass/main.sass';
 
 import.meta.glob([
     '../images/**',
+    '../fonts/**',
 ]);
