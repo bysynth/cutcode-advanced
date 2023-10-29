@@ -2,9 +2,9 @@
 
 namespace App\Providers;
 
-use App\Faker\FakerImageProvider;
 use Faker\Generator;
 use Illuminate\Support\ServiceProvider;
+use Support\Testing\FakerImageProvider;
 
 class TestingServiceProvider extends ServiceProvider
 {
