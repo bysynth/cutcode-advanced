@@ -20,11 +20,13 @@ class SignUpController extends Controller
         // TODO make DTOs
 
         // Try/catch in real project
-        $action(
+        $user = $action(
             $request->input('name'),
             $request->input('email'),
             $request->input('password')
         );
+
+        auth()->login($user);
 
         return redirect()->intended(route('home'));
     }
