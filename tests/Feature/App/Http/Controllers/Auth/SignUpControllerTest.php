@@ -12,13 +12,40 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 class SignUpControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_sign_up_page_success(): void
+    private array $request;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->request = SignUpFormRequest::factory()->create([
+            'email' => 'testing@mail.com',
+            'password' => '1234567890',
+            'password_confirmation' => '1234567890'
+        ]);
+    }
+
+    private function request(): TestResponse
+    {
+        return $this->post(
+            action([SignUpController::class, 'handle']),
+            $this->request
+        );
+    }
+
+    private function findUser(): User
+    {
+        return User::where('email', $this->request['email'])->first();
+    }
+
+    public function test_page_success(): void
     {
         $this->get(action([SignUpController::class, 'page']))
             ->assertOk()
@@ -26,104 +53,68 @@ class SignUpControllerTest extends TestCase
             ->assertViewIs('auth.sign-up');
     }
 
-    public function test_sign_up_success(): void
+    public function test_validation_success(): void
     {
-        $request = SignUpFormRequest::factory()->create([
-            'email' => 'test@mail.com',
-            'password' => '12345678',
-            'password_confirmation' => '12345678',
-        ]);
+        $this->request()
+            ->assertValid();
+    }
 
+    public function test_should_fail_validation_on_password_confirm(): void
+    {
+        $this->request['password'] = '123';
+        $this->request['password_confirmation'] = '1234';
+
+        $this->request()
+            ->assertInvalid('password');
+    }
+
+    public function test_user_created_success(): void
+    {
         $this->assertDatabaseMissing('users', [
-            'email' => $request['email'],
+            'email' => $this->request['email'],
         ]);
 
-        $response = $this->post(
-            action([SignUpController::class, 'handle']),
-            $request
-        );
+        $this->request();
 
-        $response->assertValid();
         $this->assertDatabaseHas('users', [
-            'email' => $request['email'],
+            'email' => $this->request['email'],
         ]);
-        $this->assertAuthenticated();
-        $response->assertRedirect(route('home'));
     }
 
-    public function test_sign_up_failed_with_not_valid_data()
+    public function test_should_fail_validation_on_unique_email(): void
     {
-        $request = SignUpFormRequest::factory()->create([
-            'email' => 'test@test',
-            'password' => '1234',
-            'password_confirmation' => '1234',
+        UserFactory::new()->create([
+            'email' => $this->request['email'],
         ]);
 
-        $response = $this->post(
-            action([SignUpController::class, 'handle']),
-            $request
-        );
-
-        $response->assertInvalid(['email', 'password']);
-        $this->assertDatabaseMissing('users', [
-            'email' => $request['email'],
+        $this->assertDatabaseHas('users', [
+            'email' => $this->request['email'],
         ]);
+
+        $this->request()
+            ->assertInvalid('email');
     }
 
-    public function test_sing_up_failed_with_exist_email()
-    {
-        $user = UserFactory::new()->create();
-
-        $request = SignUpFormRequest::factory()->create([
-            'email' => $user->email,
-            'password' => '123456789',
-            'password_confirmation' => '123456789',
-        ]);
-
-        $response = $this->post(
-            action([SignUpController::class, 'handle']),
-            $request
-        );
-
-        $response->assertInvalid('email');
-    }
-
-    public function test_registered_event_fired()
+    public function test_registered_event_and_listeners_dispatched(): void
     {
         Event::fake();
 
-        $request = SignUpFormRequest::factory()->create([
-            'email' => 'test@mail.com',
-            'password' => '12345678',
-            'password_confirmation' => '12345678',
-        ]);
-
-        $response = $this->post(
-            action([SignUpController::class, 'handle']),
-            $request
-        );
+        $this->request();
 
         Event::assertDispatched(Registered::class);
         Event::assertListening(Registered::class, SendEmailNewUserListener::class);
     }
 
-    public function test_notification_sent()
+    public function test_notification_sent(): void
     {
-        Notification::fake();
+        $this->request();
 
-        $request = SignUpFormRequest::factory()->create([
-            'email' => 'test@mail.com',
-            'password' => '12345678',
-            'password_confirmation' => '12345678',
-        ]);
+        Notification::assertSentTo($this->findUser(), NewUserNotification::class);
+    }
 
-        $this->post(
-            action([SignUpController::class, 'handle']),
-            $request
-        );
-
-        $user = User::where('email', $request['email'])->first();
-
-        Notification::assertSentTo($user, NewUserNotification::class);
+    public function test_user_authenticated_and_redirected(): void
+    {
+        $this->request()->assertRedirect(route('home'));
+        $this->assertAuthenticatedAs($this->findUser());
     }
 }

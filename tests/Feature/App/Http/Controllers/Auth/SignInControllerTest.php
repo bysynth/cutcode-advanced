@@ -12,7 +12,7 @@ class SignInControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_login_page_success(): void
+    public function test_page_success(): void
     {
         $this->get(action([SignInController::class, 'page']))
             ->assertOk()
@@ -20,7 +20,7 @@ class SignInControllerTest extends TestCase
             ->assertViewIs('auth.login');
     }
 
-    public function test_sign_in_success(): void
+    public function test_handle_success(): void
     {
         $password = '123456789';
 
@@ -41,36 +41,34 @@ class SignInControllerTest extends TestCase
             ->assertRedirect(route('home'));
     }
 
-    public function test_sign_in_failed_with_incorrect_password()
+    public function test_handle_fail(): void
     {
-        $incorrectPassword = '987654321';
-
-        $user = UserFactory::new()->create([
-            'email' => 'test@mail.com',
-            'password' => bcrypt('123456789'),
-        ]);
-
         $request = SignInFormRequest::factory()->create([
-            'email' => $user->email,
-            'password' => $incorrectPassword,
+            'email' => 'notfound@mail.com',
+            'password' => str()->random(10),
         ]);
 
-        $response = $this->post(action([SignInController::class, 'handle']), $request);
+        $this->post(action([SignInController::class, 'handle']), $request)
+            ->assertInvalid('email');
 
-        $response->assertInvalid('email');
         $this->assertGuest();
     }
 
-    public function test_user_can_logout()
+    public function test_logout_success(): void
     {
         $user = UserFactory::new()->create([
-            'email' => 'test@mail.com',
-            'password' => bcrypt('123456789'),
+            'email' => 'testing@mail.com',
         ]);
 
-        $response = $this->actingAs($user)->delete(action([SignInController::class, 'logOut']));
+        $this->actingAs($user)
+            ->delete(action([SignInController::class, 'logOut']));
 
-        $response->assertRedirect(route('home'));
         $this->assertGuest();
+    }
+
+    public function test_logout_guest_middleware_fail()
+    {
+        $this->delete(action([SignInController::class, 'logOut']))
+            ->assertRedirect(route('home'));
     }
 }

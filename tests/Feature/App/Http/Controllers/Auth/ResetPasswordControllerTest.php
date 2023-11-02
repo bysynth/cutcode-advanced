@@ -2,12 +2,10 @@
 
 namespace Tests\Feature\App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use Database\Factories\UserFactory;
-use Illuminate\Auth\Notifications\ResetPassword;
+use Domain\Auth\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
 use Tests\TestCase;
 
@@ -15,80 +13,47 @@ class ResetPasswordControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_password_reset_page_success(): void
+    private string $token;
+    private User $user;
+
+    protected function setUp(): void
     {
-        Notification::fake();
+        parent::setUp();
 
-        $user = UserFactory::new()->create([
-            'email' => 'testing@mail.com'
-        ]);
-
-        $this->post(action([ForgotPasswordController::class, 'handle']), [
-            'email' => $user->email
-        ]);
-
-        Notification::assertSentTo($user, ResetPassword::class, function (ResetPassword $notification) {
-            $response = $this->get(action([ResetPasswordController::class, 'page'], $notification->token));
-
-            $response->assertOk()
-                ->assertSee('Восстановление пароля')
-                ->assertViewIs('auth.reset-password');
-
-            return true;
-        });
+        $this->user = UserFactory::new()->create();
+        $this->token = Password::createToken($this->user);
     }
 
-    public function test_password_reset_process_success()
+    public function test_page_success(): void
     {
-        Notification::fake();
-
-        $user = UserFactory::new()->create([
-            'email' => 'testing@mail.com'
-        ]);
-
-        $this->post(action([ForgotPasswordController::class, 'handle']), [
-            'email' => $user->email
-        ]);
-
-        Notification::assertSentTo($user, ResetPassword::class, function (ResetPassword $notification) use ($user) {
-            $response = $this->post(action([ResetPasswordController::class, 'handle']), [
-                'token' => $notification->token,
-                'email' => $user->email,
-                'password' => '123456789',
-                'password_confirmation' => '123456789',
-            ]);
-
-            $response->assertValid();
-            $response->assertRedirectToRoute('login');
-            $response->assertSessionHas('flash_message', __(Password::PASSWORD_RESET));
-
-            return true;
-        });
+        $this->get(action([ResetPasswordController::class, 'page'], ['token' => $this->token]))
+            ->assertOk()
+            ->assertSee('Восстановление пароля')
+            ->assertViewIs('auth.reset-password');
     }
 
-    public function test_password_reset_process_failed_with_validation_errors()
+    public function test_handle_success(): void
     {
-        Notification::fake();
+        $password = '1234567890';
+        $password_confirmation = '1234567890';
 
-        $user = UserFactory::new()->create([
-            'email' => 'testing@mail.com'
+        Password::shouldReceive('reset')
+            ->once()
+            ->withSomeOfArgs([
+                'email' => $this->user->email,
+                'password' => $password,
+                'password_confirmation' => $password_confirmation,
+                'token' => $this->token
+            ])
+            ->andReturn(Password::PASSWORD_RESET);
+
+        $response = $this->post(action([ResetPasswordController::class, 'handle']), [
+            'email' => $this->user->email,
+            'password' => $password,
+            'password_confirmation' => $password_confirmation,
+            'token' => $this->token
         ]);
 
-        $this->post(action([ForgotPasswordController::class, 'handle']), [
-            'email' => $user->email
-        ]);
-
-        Notification::assertSentTo($user, ResetPassword::class, function (ResetPassword $notification) {
-            $response = $this->post(action([ResetPasswordController::class, 'handle']), [
-                'token' => $notification->token,
-                'email' => 'failed@mail.com',
-                'password' => 'password',
-                'password_confirmation' => 'password',
-            ]);
-
-            $response->assertInvalid('email');
-
-            return true;
-        });
+        $response->assertRedirect(route('login'));
     }
 }

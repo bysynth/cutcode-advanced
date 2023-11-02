@@ -21,7 +21,7 @@ class SocialAuthController extends Controller
         }
     }
 
-    public function callback(string $driver)
+    public function callback(string $driver): RedirectResponse
     {
         if ($driver !== 'github') {
             throw new DomainException('Драйвер не поддерживается');
@@ -30,10 +30,10 @@ class SocialAuthController extends Controller
         $githubUser = Socialite::driver($driver)->user();
 
         $user = User::updateOrCreate([
-            $driver .'_id' => $githubUser->id,
+            $driver .'_id' => $githubUser->getId(),
         ], [
-            'name' => $githubUser->name ?? $githubUser->email,
-            'email' => $githubUser->email,
+            'name' => $githubUser->getName(),
+            'email' => $githubUser->getEmail(),
             'password' => bcrypt(str()->random(20)),
         ]);
 
