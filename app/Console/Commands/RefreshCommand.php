@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Storage;
 
 class RefreshCommand extends Command
 {
-    protected $signature = 'advanced:refresh';
+    protected $signature = 'app:refresh';
 
     protected $description = 'Refresh';
 

@@ -18,6 +18,8 @@ class ProductFactory extends Factory
             'thumbnail' => fake()->fixturesImage('products', '/images/products/'),
             'price' => fake()->numberBetween(1000, 100000),
             'brand_id' => Brand::inRandomOrder()->value('id'),
+            'on_home_page' => fake()->boolean(),
+            'sorting' => fake()->numberBetween(1, 999),
         ];
     }
 }

@@ -14,6 +14,8 @@ class CategoryFactory extends Factory
     {
         return [
             'title' => ucfirst(fake()->words(2, true)),
+            'on_home_page' => fake()->boolean(),
+            'sorting' => fake()->numberBetween(1, 999),
         ];
     }
 }
