@@ -2,13 +2,16 @@
 
 namespace App\Models;
 
-use App\Traits\Models\HasSlug;
-use App\Traits\Models\HasThumbnail;
+use Domain\Catalog\Models\Brand;
+use Domain\Catalog\Models\Category;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Support\Casts\PriceCast;
+use Support\Traits\Models\HasSlug;
+use Support\Traits\Models\HasThumbnail;
 
 class Product extends Model
 {
@@ -26,12 +29,16 @@ class Product extends Model
         'sorting',
     ];
 
+    protected $casts = [
+        'price' => PriceCast::class
+    ];
+
     protected function thumbnailDir(): string
     {
         return 'products';
     }
 
-    public function scopeHomePage(Builder $query)
+    public function scopeHomePage(Builder $query): void
     {
         $query->where('on_home_page', true)
             ->orderBy('sorting')

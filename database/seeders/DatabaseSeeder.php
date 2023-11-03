@@ -3,20 +3,21 @@
 namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use App\Models\Brand;
-use App\Models\Category;
 use App\Models\Product;
+use Database\Factories\BrandFactory;
+use Database\Factories\CategoryFactory;
+use Database\Factories\ProductFactory;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        Brand::factory(20)->create();
+        BrandFactory::new()->count(20)->create();
 
-        $categories = Category::factory(10)->create();
+        $categories = CategoryFactory::new()->count(10)->create();
 
-        Product::factory(30)
+        ProductFactory::new()->count(30)
             ->create()
             ->each(fn(Product $product) => $product
                 ->categories()

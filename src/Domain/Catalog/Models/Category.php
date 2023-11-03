@@ -1,12 +1,14 @@
 <?php
 
-namespace App\Models;
+namespace Domain\Catalog\Models;
 
-use App\Traits\Models\HasSlug;
-use Illuminate\Database\Eloquent\Builder;
+use App\Models\Product;
+use Domain\Catalog\Collections\CategoryCollection;
+use Domain\Catalog\QueryBuilders\CategoryQueryBuilder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Support\Traits\Models\HasSlug;
 
 class Category extends Model
 {
@@ -20,11 +22,14 @@ class Category extends Model
         'sorting',
     ];
 
-    public function scopeHomePage(Builder $query)
+    public function newCollection(array $models = []): CategoryCollection
     {
-        $query->where('on_home_page', true)
-            ->orderBy('sorting')
-            ->limit(6);
+        return new CategoryCollection($models);
+    }
+
+    public function newEloquentBuilder($query): CategoryQueryBuilder
+    {
+        return new CategoryQueryBuilder($query);
     }
 
     public function products(): BelongsToMany
