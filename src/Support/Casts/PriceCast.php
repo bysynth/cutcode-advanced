@@ -19,6 +19,6 @@ class PriceCast implements CastsAttributes
             $value = Price::make($value);
         }
 
-        return $value->raw();
+        return (int) ($value->raw() * $value->precision());
     }
 }

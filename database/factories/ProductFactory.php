@@ -15,8 +15,8 @@ class ProductFactory extends Factory
     {
         return [
             'title' => ucfirst(fake()->words(2, true)),
-            'thumbnail' => fake()->fixturesImage('products', '/images/products/'),
-            'price' => fake()->numberBetween(10000, 1000000),
+            'thumbnail' => fake()->fixturesImage('products', 'products'),
+            'price' => fake()->numberBetween(1000, 10000),
             'brand_id' => Brand::inRandomOrder()->value('id'),
             'on_home_page' => fake()->boolean(),
             'sorting' => fake()->numberBetween(1, 999),
