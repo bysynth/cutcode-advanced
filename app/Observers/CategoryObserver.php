@@ -17,6 +17,11 @@ class CategoryObserver
         $this->clearHomePageCache();
     }
 
+    public function deleted(Category $category): void
+    {
+        $this->clearHomePageCache();
+    }
+
     private function clearHomePageCache(): void
     {
         Cache::forget('category_home_page');

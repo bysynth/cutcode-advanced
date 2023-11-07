@@ -17,6 +17,11 @@ class BrandObserver
         $this->clearHomePageCache();
     }
 
+    public function deleted(Brand $brand): void
+    {
+        $this->clearHomePageCache();
+    }
+
     private function clearHomePageCache(): void
     {
         Cache::forget('brand_home_page');

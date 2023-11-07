@@ -2,7 +2,9 @@
 
 namespace Support\Traits\Models;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 
 trait HasThumbnail
 {
@@ -21,5 +23,29 @@ trait HasThumbnail
     protected function thumbnailColumn(): string
     {
         return 'thumbnail';
+    }
+
+    protected static function bootHasThumbnail(): void
+    {
+        static::deleting(function (Model $item) {
+            $item->deleteThumbnail();
+        });
+    }
+
+    protected function deleteThumbnail(): void
+    {
+        if (!$this->{$this->thumbnailColumn()}) {
+            return;
+        }
+
+        $thumbnail = $this->{$this->thumbnailColumn()};
+        $thumbnailName = File::basename($thumbnail);
+        $storage = Storage::disk('images');
+
+        $files = collect($storage->allFiles($this->thumbnailDir()))
+            ->filter(fn($item) => str($item)->contains($thumbnailName))
+            ->toArray();
+
+        $storage->delete($files);
     }
 }
