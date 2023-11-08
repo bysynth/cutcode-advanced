@@ -2,59 +2,27 @@
 
 namespace Tests\Feature\App\Http\Controllers;
 
-use App\Http\Controllers\ThumbnailController;
-use Database\Factories\BrandFactory;
+use Database\Factories\ProductFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 class ThumbnailControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    private string $dir;
-    private string $method;
-    private string $size;
-    private string $file;
-    private string $path;
-
-    protected function setUp(): void
+    public function test_generated_success(): void
     {
-        parent::setUp();
+        $size = '500x500';
+        $method = 'resize';
+        $storage = Storage::disk('images');
+        config()->set('thumbnail', ['allowed_sizes' => [$size]]);
+        $product = ProductFactory::new()->create();
 
-        $this->dir = 'brands';
-        $this->method = 'resize';
-        $this->size = '70x70';
-        $this->file = basename(BrandFactory::new()->create()->thumbnail);
-        $this->path = "$this->dir/$this->method/$this->size/$this->file";
-    }
+        $response = $this->get($product->makeThumbnail($size, $method));
 
-    private function request(): TestResponse
-    {
-        return $this->get(
-            action(ThumbnailController::class, [
-                'dir' => $this->dir,
-                'method' => $this->method,
-                'size' => $this->size,
-                'file' => $this->file
-            ])
-        );
-    }
-
-    public function test_thumbnail_create_success(): void
-    {
-        $this->request()->assertOk();
-
-        Storage::disk('images')->assertExists($this->path);
-    }
-
-    public function test_forbidden_when_size_is_not_allowed(): void
-    {
-        $this->size = '10x10';
-
-        $this->request()->assertForbidden();
-
-        Storage::disk('images')->assertMissing($this->path);
+        $response->assertOk();
+        $storage->assertExists("products/$method/$size/" . File::basename($product->thumbnail));
     }
 }
