@@ -17,7 +17,7 @@ class DatabaseSeeder extends Seeder
 
         $categories = CategoryFactory::new()->count(10)->create();
 
-        ProductFactory::new()->count(30)
+        ProductFactory::new()->count(50)
             ->create()
             ->each(fn(Product $product) => $product
                 ->categories()

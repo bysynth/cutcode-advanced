@@ -20,6 +20,7 @@ class ProductFactory extends Factory
             'brand_id' => Brand::inRandomOrder()->value('id'),
             'on_home_page' => fake()->boolean(),
             'sorting' => fake()->numberBetween(1, 999),
+            'text' => fake()->realText(),
         ];
     }
 }
