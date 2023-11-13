@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
-use Domain\Catalog\Models\Brand;
 use Domain\Catalog\Models\Category;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\View\View;
@@ -12,10 +11,6 @@ class CatalogController extends Controller
 {
     public function __invoke(?Category $category): View
     {
-        $brands = Brand::has('products')
-            ->select(['id', 'title'])
-            ->get();
-
         $categories = Category::has('products')
             ->select(['id', 'title', 'slug'])
             ->get();
@@ -38,7 +33,6 @@ class CatalogController extends Controller
 
 
         return view('catalog.index', [
-            'brands' => $brands,
             'categories' => $categories,
             'products' => $products,
             'category' => $category,
