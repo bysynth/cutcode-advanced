@@ -2,9 +2,9 @@
 
 namespace Domain\Catalog\Models;
 
-use App\Models\Product;
-use Domain\Catalog\Collections\BrandCollection;
 use Domain\Catalog\QueryBuilders\BrandQueryBuilder;
+use Domain\Product\Collections\OptionValueCollection;
+use Domain\Product\Models\Product;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -30,9 +30,9 @@ class Brand extends Model
         return 'brands';
     }
 
-    public function newCollection(array $models = []): BrandCollection
+    public function newCollection(array $models = []): OptionValueCollection
     {
-        return new BrandCollection($models);
+        return new OptionValueCollection($models);
     }
 
     public function newEloquentBuilder($query): BrandQueryBuilder
