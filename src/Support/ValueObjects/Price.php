@@ -38,11 +38,6 @@ class Price implements Stringable
         return $this->value / $this->precision;
     }
 
-    public function precision(): int
-    {
-        return $this->precision;
-    }
-
     public function currency(): string
     {
         return $this->currency;
@@ -57,7 +52,7 @@ class Price implements Stringable
     {
         return number_format(
             $this->value(),
-            0,
+            2,
             ',',
             ' '
         ) . ' ' . $this->symbol();

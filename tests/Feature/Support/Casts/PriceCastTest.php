@@ -19,7 +19,7 @@ class PriceCastTest extends TestCase
         parent::setUp();
 
         $this->product = ProductFactory::new()->create([
-            'price' => 100
+            'price' => 10000
         ]);
     }
 
@@ -28,12 +28,12 @@ class PriceCastTest extends TestCase
         $price = $this->product->price;
 
         $this->assertInstanceOf(Price::class, $price);
-        $this->assertEquals('100 ₽', str($price)->value());
+        $this->assertEquals('100,00 ₽', str($price)->value());
     }
 
     public function test_set_cast_success(): void
     {
-        $value = 200.71;
+        $value = 20071;
         $this->product->update([
             'price' => $value
         ]);

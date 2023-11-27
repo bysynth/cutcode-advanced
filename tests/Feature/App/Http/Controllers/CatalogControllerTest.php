@@ -14,13 +14,13 @@ class CatalogControllerTest extends TestCase
 
     public function test_success_price_filtered_response(): void
     {
-        $products = ProductFactory::new()->count(10)->create(['price' => 200]);
+        $products = ProductFactory::new()->count(10)->create(['price' => 200000]);
 
         $expectedProduct = ProductFactory::new()->createOne(['price' => 100000]);
 
         $request = [
             'filters' => [
-                'price' => ['from' => 99900, 'to' => 100100],
+                'price' => ['from' => 999, 'to' => 1001],
             ]
         ];
 
