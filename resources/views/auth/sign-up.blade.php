@@ -12,7 +12,6 @@
 
         <x-forms.text-input
             name="name"
-            type="name"
             placeholder="Имя"
             required
             value="{{ old('name') }}"
