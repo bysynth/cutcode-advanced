@@ -50,7 +50,7 @@ class OrderController extends Controller
 
         (new OrderProcess($order))->processes([
             new CheckProductQuantities(),
-            new AssignCustomer(request('customer')),
+            new AssignCustomer(OrderCustomerDTO::fromArray($request->input('customer'))),
             new AssignProducts(),
             new ChangeStateToPending(),
             new DecreaseProductsQuantities(),
