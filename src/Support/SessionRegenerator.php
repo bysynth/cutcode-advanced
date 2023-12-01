@@ -11,8 +11,6 @@ class SessionRegenerator
     {
         $old = request()->session()->getId();
 
-        // TODO: Fix auth
-
         request()->session()->invalidate();
 
         request()->session()->regenerateToken();
