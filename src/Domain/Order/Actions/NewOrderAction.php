@@ -2,30 +2,30 @@
 
 namespace Domain\Order\Actions;
 
-use App\Http\Requests\OrderFormRequest;
 use Domain\Auth\Contracts\RegisterNewUserContract;
 use Domain\Auth\DTOs\NewUserDTO;
+use Domain\Order\DTOs\OrderCustomerDTO;
+use Domain\Order\DTOs\OrderDTO;
 use Domain\Order\Models\Order;
 
 class NewOrderAction
 {
-    public function __invoke(OrderFormRequest $request): Order
+    public function __invoke(OrderDTO $order, OrderCustomerDTO $customer, bool $createAccount): Order
     {
         $registerAction = app(RegisterNewUserContract::class);
 
-        $customer = $request->input('customer');
-
-        if ($request->boolean('create_account')) {
+        if ($createAccount) {
             $registerAction(NewUserDTO::make(
-                $customer['first_name'] . ' ' . $customer['last_name'],
-                $customer['email'],
-                $request->input('password')
+                $customer->fullname(),
+                $customer->email,
+                $order->password
             ));
         }
 
         return Order::create([
-            'payment_method_id' => $request->input('payment_method_id'),
-            'delivery_type_id' => $request->input('delivery_type_id'),
+            // 'user_id' => auth()->id(),
+            'payment_method_id' => $order->payment_method_id,
+            'delivery_type_id' => $order->delivery_type_id,
         ]);
     }
 }
